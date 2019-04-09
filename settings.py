@@ -1,8 +1,8 @@
 # Training settings
-batch_size_train = 25
-batch_size_test = 3
-epochs = 20
-lr = 0.001
+batch_size_train = 8
+batch_size_test = 8
+epochs = 50
+lr = 0.00005
 momentum = 0.9
 no_cuda =False
 seed = 8
