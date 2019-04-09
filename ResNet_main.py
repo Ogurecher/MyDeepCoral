@@ -7,8 +7,12 @@ import math
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 testing_statistic = []
+fig = plt.figure()
+subplot = fig.add_subplot(1,1,1)
+x_train, y_train, x_test, y_test = [], [], [], []
 
 def train(epoch, model):
     result = []
@@ -44,7 +48,7 @@ def train(epoch, model):
     return result
 
 
-def test(model, dataset_loader):
+def test(model, dataset_loader, epoch, mode = "training"):
     model.eval()
     test_loss = 0
     correct = 0
@@ -57,17 +61,25 @@ def test(model, dataset_loader):
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     test_loss /= len(dataset_loader.dataset)
-    print('\nAverage loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
-        test_loss, correct, len(dataset_loader.dataset),
+    print('\nMode: {}, Epoch: {}, Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)'.format(
+        mode, epoch, test_loss, correct, len(dataset_loader.dataset),
         100. * correct / len(dataset_loader.dataset)))
 
     testing_statistic.append({
-        'data': dataset_loader.dataset.root,
+        'data': mode,
+        'epoch': epoch,
         'average_loss': test_loss,
         'correct': correct,
         'total': len(dataset_loader.dataset),
         'accuracy':  100. * len(dataset_loader.dataset)
     })
+
+    if mode == "training":
+        x_train.append(epoch)
+        y_train.append(test_loss)
+    elif mode == "testing":
+        x_test.append(epoch)
+        y_test.append(test_loss)
 
     return correct
 
@@ -84,13 +96,17 @@ if __name__ == '__main__':
         res = train(epoch, model)
         training_statistic.append(res)
 
-        t_correct = test(model, data_loader.target_test_loader)
-        test(model, data_loader.source_loader)
+        test(model, data_loader.source_loader, epoch=epoch, mode="training")
+        t_correct = test(model, data_loader.target_test_loader, epoch=epoch, mode="testing")
 
         if t_correct > correct:
             correct = t_correct
         print('source: {} max correct: {} max target accuracy{: .2f}%\n'.format(
               settings.source_name, correct, 100. * correct / data_loader.len_target_dataset))
+
+    subplot.plot(x_train, y_train, 'g')
+    subplot.plot(x_test, y_test, 'r')
+    plt.show()
 
     utils.save(training_statistic, 'training_statistic.pkl')
     utils.save(testing_statistic, 'testing_statistic.pkl')
