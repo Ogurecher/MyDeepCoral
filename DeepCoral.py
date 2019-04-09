@@ -69,24 +69,24 @@ def train(epoch, model):
                 'loss': loss.data[0],  # classification_loss.data[0]
             })
 
-        return result
+    return result
 
 def test(model, dataset_loader, epoch, mode = "training"):
     model.eval()
     test_loss = 0
     correct = 0
 
-    for data, target in data_loader.target_test_loader:
+    for data, target in dataset_loader:
         data, target = Variable(data, volatile=True), Variable(target)
         s_output, t_output = model(data, data)
         test_loss += F.nll_loss(F.log_softmax(s_output, dim = 1), target, size_average=False).data[0] # sum up batch loss
         pred = s_output.data.max(1)[1] # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
-    test_loss /= data_loader.len_target_dataset
+    test_loss /= len(dataset_loader.dataset)
     print('\n{} set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
-        settings.target_name, test_loss, correct, data_loader.len_target_dataset,
-        100. * correct / data_loader.len_target_dataset))
+        mode, test_loss, correct, len(dataset_loader.dataset),
+        100. * correct / len(dataset_loader.dataset)))
 
     testing_statistic.append({
         'data': mode,
@@ -94,7 +94,7 @@ def test(model, dataset_loader, epoch, mode = "training"):
         'average_loss': test_loss,
         'correct': correct,
         'total': len(dataset_loader.dataset),
-        'accuracy': 100. * len(dataset_loader.dataset)
+        'accuracy': 100. * correct / len(dataset_loader.dataset)
     })
 
     if mode == "training":
