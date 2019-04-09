@@ -9,7 +9,14 @@ import data_loader
 import ResNet as models
 from torch.utils import model_zoo
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import matplotlib.pyplot as plt
+import utils
 
+training_statistic = []
+testing_statistic = []
+fig = plt.figure()
+subplot = fig.add_subplot(1,1,1)
+x_train, y_train, x_test, y_test = [], [], [], []
 
 def load_pretrain(model):
     url = 'https://download.pytorch.org/models/resnet50-19c8e357.pth'
@@ -54,7 +61,7 @@ def train(epoch, model):
                 epoch, i * len(data_source), data_loader.len_source_dataset,
                 100. * i / data_loader.len_source_loader, loss.data[0], loss_cls.data[0], loss_coral.data[0]))
 
-def test(model):
+def test(model, dataset_loader, epoch, mode = "training"):
     model.eval()
     test_loss = 0
     correct = 0
@@ -70,6 +77,23 @@ def test(model):
     print('\n{} set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
         settings.target_name, test_loss, correct, data_loader.len_target_dataset,
         100. * correct / data_loader.len_target_dataset))
+
+    testing_statistic.append({
+        'data': mode,
+        'epoch': epoch,
+        'average_loss': test_loss,
+        'correct': correct,
+        'total': len(dataset_loader.dataset),
+        'accuracy': 100. * len(dataset_loader.dataset)
+    })
+
+    if mode == "training":
+        x_train.append(epoch)
+        y_train.append(test_loss)
+    elif mode == "testing":
+        x_test.append(epoch)
+        y_test.append(test_loss)
+
     return correct
 
 
@@ -80,8 +104,19 @@ if __name__ == '__main__':
     #model = load_pretrain(model)
     for epoch in range(1, settings.epochs + 1):
         train(epoch, model)
-        t_correct = test(model)
+
+        test(model, data_loader.source_loader, epoch=epoch, mode="training")
+        t_correct = test(model, data_loader.target_test_loader, epoch=epoch, mode="testing")
+
         if t_correct > correct:
             correct = t_correct
         print('source: {} to target: {} max correct: {} max accuracy{: .2f}%\n'.format(
               settings.source_name, settings.target_name, correct, 100. * correct / data_loader.len_target_dataset ))
+
+    subplot.plot(x_train, y_train, 'g')
+    subplot.plot(x_test, y_test, 'r')
+    plt.show()
+
+    utils.save(training_statistic, 'training_statistic.pkl')
+    utils.save(testing_statistic, 'testing_statistic.pkl')
+    utils.save_net(model, 'checkpoint.tar')
