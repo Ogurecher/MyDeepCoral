@@ -29,6 +29,7 @@ def load_pretrain(model):
     return model
 
 def train(epoch, model):
+    result = []
     LEARNING_RATE = settings.lr / math.pow((1 + 10 * (epoch - 1) / settings.epochs), 0.75)
     print('learning rate{: .4f}'.format(LEARNING_RATE) )
     optimizer = torch.optim.SGD([
@@ -60,6 +61,15 @@ def train(epoch, model):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\ttotal_Loss: {:.6f}\tcls_Loss: {:.6f}\tcoral_Loss: {:.6f}'.format(
                 epoch, i * len(data_source), data_loader.len_source_dataset,
                 100. * i / data_loader.len_source_loader, loss.data[0], loss_cls.data[0], loss_coral.data[0]))
+
+            result.append({
+                'epoch': epoch,
+                'step': i + 1,
+                'total_steps': num_iter,
+                'loss': loss.data[0],  # classification_loss.data[0]
+            })
+
+        return result
 
 def test(model, dataset_loader, epoch, mode = "training"):
     model.eval()
