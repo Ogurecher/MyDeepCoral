@@ -1,23 +1,36 @@
-# Deep Coral
-A PyTorch implementation of '[Deep CORAL Correlation Alignment for Deep Domain Adaptation](https://arxiv.org/pdf/1607.01719.pdf)'.
-The contributions of this paper are summarized as fol-
-lows.
-* They extend CORAL to incorporate it directly into deep networks by constructing a differentiable loss function that minimizes the difference between source and target correlations–the CORAL loss.
-* Compared to CORAL, Deep CORAL approach learns a non-linear transformation that is more powerful and also works seamlessly with deep CNNs.
+# Инструкция
+## settings.py
+Содержит настройки и параметры сети
 
-## Requirement
-* python 3
-* pytorch 0.3.1
-* torchvision 0.2.0
+batch_size - сколько картинок кормим сетке за раз. Чем больше, тем лучше, но при больших значениях лагает. Также при обучении отбрасывается последний batch, т.е. в идеале количество тренировочных данных должно делиться на batch_size с маленьким остатком или без него.
 
-## Usage
-1. You can download Office31 dataset [here](https://pan.baidu.com/s/1o8igXT4#list/path=%2F). And then unrar dataset in ./dataset/.
-2. You can change the `source_name` and `target_name` in `DeepCoral.py` to set different transfer tasks.
-3. Run `python DeepCoral.py`.
+epoch - количество эпох. Чем больше, тем дольше обучается модель.
 
-## Results on Office31
-| Method | A - W | D - W | W - D | A - D | D - A | W - A | Average |
-|:--------------:|:-----:|:-----:|:-----:|:-----:|:----:|:----:|:-------:|
-| DCORAL | 77.7±0.3 | 97.6±0.2 | 99.7±0.1 | 81.1±0.4 | 64.6±0.3 | 64.0±0.4 | 80.8 |
+lr - learning rate. Его я, вроде, более-менее нормально подобрал, но если очень сильно скачет ошибка после нескольких эпох, можно немного снизить.
 
-> Please note that the results are run by myself. To compared to other methods, I add the coral loss after the average pool layer in ResNet50. In the paper, they add the coral loss after the fc8 in AlexNet.
+use_checkpoint - использует данные модели из checkpoint.tar. При включении можно дообучить обученную модель.
+
+## Как запускать?
+Для запуска ResNet - ResNet_main.py
+
+Для запуска DeepCORAL - DeepCoral.py
+
+Сначала должно вывести данные о модели, потом должны пойти эпохи с процентами и loss'ом. После каждой эпохи выводятся результаты тестов сначала на тренировочных данных, потом на тестовых.
+
+Когда отработают все эпохи (settings.epoch), должно вывести график. Его скриним и отправляем в беседу. После этого ЗАКРЫВАЕМ ГРАФИК. Только после того, как он закроется, обученная модель сохранится.
+
+Далее создаем папку, называем ее осмысленным названием (сеть, число эпох, batch_size) и копируем туда файлы training_statistic.pkl, testing_statistic.pkl и checkpoint.tar. Не забудьте, что при следующем запуске автоматически будет использоваться этот новый чекпоинт, так что если вы этого не хотите, замените его на нужный в корневой папке.
+
+## Как работать с данными?
+Чтобы добавить картинки, вам необходимо: папка images с картинками и файл labels.csv с разметкой.
+
+В папке dataset/labels_and_script лежат: скрипт split.py, который нужен для разделения картинок из images на две папки, разметки наших тренировочных (labels.csv) и тестовых (ResultTest (1).csv) данных.
+
+Чтобы добавить тренировочные или тестовые данные, заходим в dataset/source или dataset/target соответственно, добавляем туда папку images с вашими картинками, скрипт split.py и вашу разметку labels.csv, а затем запускаем из этой папки split.py. После отработки пустую папку images можно удалить.
+
+На данный момент у нас используются картинки 64х64, но сетка работает минимум на 224х224, так что наши картинки доведены до этого размера добавлением черной рамки толщиной 80px.
+
+Чтобы работали картинки 224х224, нужно закомментить в ResNet.py строчку x = self.resize(x)
+
+## Как посмотреть статистику?
+Статистика обучения и тестов сохраняется в формате pkl. Чтобы с ним работать, нужно извлечь данные при помощи скрипта unpickle.py. В нем есть методы для конвертации в txt и для построения графика accuracy. Можно добавлять в этот скрипт свои методы по аналогии с уже написанными, чтобы построить любой график или сделать что-то еще со статистикой.
