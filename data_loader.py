@@ -21,9 +21,9 @@ def load_testing(root_path, dir, batch_size):
     return test_loader
 
 
-source_loader = load_training(settings.root_path, settings.source_name, settings.batch_size_train)
-target_train_loader = load_training(settings.root_path, settings.target_name, settings.batch_size_train)
-target_test_loader = load_testing(settings.root_path, settings.target_name, settings.batch_size_test)
+source_loader = load_training(settings.root_path, settings.source_name, settings.batch_size)
+target_train_loader = load_training(settings.root_path, settings.target_name, settings.batch_size)
+target_test_loader = load_testing(settings.root_path, settings.target_name, settings.batch_size)
 
 len_source_dataset = len(source_loader.dataset)
 len_target_dataset = len(target_test_loader.dataset)

@@ -1,6 +1,8 @@
 import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
+import settings
+import utils
 from Coral import CORAL
 
 
@@ -156,7 +158,7 @@ class ResNet(nn.Module):
 class DeepCoral(nn.Module):
     def __init__(self, num_classes=2):
         super(DeepCoral, self).__init__()
-        self.sharedNet = resnet50(False)
+        self.sharedNet = resnet50(settings.use_checkpoint)
         self.cls_fc = nn.Linear(2048, num_classes)
 
     def forward(self, source, target):
@@ -166,17 +168,18 @@ class DeepCoral(nn.Module):
         if self.training == True:
             target = self.sharedNet(target)
             loss += CORAL(source, target)
-        source = self.cls_fc(source)
+        source = self.sharedNet.classifier(source)
 
         return source, loss
 
-def resnet50(pretrained=False, **kwargs):
+
+def resnet50(load):
     """Constructs a ResNet-50 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
+    model = ResNet(Bottleneck, [3, 4, 6, 3])
+    if load == True:
+        utils.load_net(model, "checkpoint.tar")
     return model

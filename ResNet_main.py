@@ -71,7 +71,7 @@ def test(model, dataset_loader, epoch, mode = "training"):
         'average_loss': test_loss,
         'correct': correct,
         'total': len(dataset_loader.dataset),
-        'accuracy':  100. * len(dataset_loader.dataset)
+        'accuracy':  100. * correct / len(dataset_loader.dataset)
     })
 
     if mode == "training":
@@ -86,7 +86,7 @@ def test(model, dataset_loader, epoch, mode = "training"):
 
 if __name__ == '__main__':
     models.resNet_main = True
-    model = models.ResNet(models.Bottleneck, [3, 4, 6, 3], num_classes=2)
+    model = models.resnet50(settings.use_checkpoint)
     correct = 0
     print(model)
 
