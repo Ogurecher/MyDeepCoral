@@ -138,7 +138,8 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.resize(x)                            ###
+        if (settings.image_size[0] < 224 or settings.image_size[1] < 224):
+            x = self.resize(x)                            ###
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)

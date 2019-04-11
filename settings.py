@@ -1,6 +1,6 @@
 # Training settings
-batch_size = 8
-epochs = 100
+batch_size = 2
+epochs = 1
 lr = 0.01
 momentum = 0.9
 no_cuda =False
@@ -11,3 +11,4 @@ root_path = "./dataset/"
 source_name = "source"
 target_name = "target"
 use_checkpoint = True
+image_size = [64, 64]

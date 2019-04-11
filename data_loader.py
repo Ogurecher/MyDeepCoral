@@ -4,7 +4,7 @@ import settings
 
 def load_training(root_path, dir, batch_size):
     transform = transforms.Compose(
-        [transforms.Resize([64, 64]),
+        [transforms.Resize([settings.image_size[0], settings.image_size[1]]),
          transforms.Grayscale(num_output_channels=1),
          transforms.ToTensor()])
     data = datasets.ImageFolder(root=root_path + dir, transform=transform)
@@ -13,7 +13,7 @@ def load_training(root_path, dir, batch_size):
 
 def load_testing(root_path, dir, batch_size):
     transform = transforms.Compose(
-        [transforms.Resize([64, 64]),
+        [transforms.Resize([settings.image_size[0], settings.image_size[1]]),
          transforms.Grayscale(num_output_channels=1),
          transforms.ToTensor()])
     data = datasets.ImageFolder(root=root_path + dir, transform=transform)
