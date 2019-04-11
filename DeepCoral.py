@@ -62,14 +62,14 @@ def train(epoch, model):
                 epoch, i * len(data_source), data_loader.len_source_dataset,
                 100. * i / data_loader.len_source_loader, loss.data[0], loss_cls.data[0], loss_coral.data[0]))
 
-            result.append({
-                'epoch': epoch,
-                'step': i + 1,
-                'total_steps': num_iter,
-                'loss': loss.data[0],
-                'cls loss': loss_cls.data[0],
-                'coral loss': loss_coral.data[0]
-            })
+        result.append({
+            'epoch': epoch,
+            'step': i + 1,
+            'total_steps': num_iter,
+            'loss': loss.data[0],
+            'cls loss': loss_cls.data[0],
+            'coral loss': loss_coral.data[0]
+        })
 
     return result
 
