@@ -114,7 +114,8 @@ if __name__ == '__main__':
     correct = 0
     print(model)
     for epoch in range(1, settings.epochs + 1):
-        train(epoch, model)
+        res = train(epoch, model)
+        training_statistic.append(res)
 
         test(model, data_loader.source_loader, epoch=epoch, mode="training")
         t_correct = test(model, data_loader.target_test_loader, epoch=epoch, mode="testing")
