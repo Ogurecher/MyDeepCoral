@@ -1,7 +1,7 @@
 # Training settings
-batch_size = 2
-epochs = 1
-lr = 0.01
+batch_size = 4
+epochs = 4
+lr = 0.00005
 momentum = 0.9
 no_cuda =False
 seed = 8

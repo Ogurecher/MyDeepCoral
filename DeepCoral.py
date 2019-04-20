@@ -31,7 +31,7 @@ def load_pretrain(model):
 def train(epoch, model):
     result = []
     LEARNING_RATE = settings.lr / math.pow((1 + 10 * (epoch - 1) / settings.epochs), 0.75)
-    print('learning rate{: .4f}'.format(LEARNING_RATE) )
+    print('learning rate{: .8f}'.format(LEARNING_RATE) )
     optimizer = torch.optim.SGD([
         {'params': model.sharedNet.parameters()},
         {'params': model.cls_fc.parameters(), 'lr': LEARNING_RATE},
@@ -51,16 +51,18 @@ def train(epoch, model):
         data_target = Variable(data_target)
 
         optimizer.zero_grad()
-        label_source_pred, loss_coral = model(data_source, data_target)
+        label_source_pred, coral_loss = model(data_source, data_target)
         loss_cls = F.nll_loss(F.log_softmax(label_source_pred, dim=1), label_source)
         gamma = 2 / (1 + math.exp(-10 * (epoch) / settings.epochs)) - 1
-        loss = loss_cls + gamma * loss_coral
+        #gamma *= 5
+        coral_loss_sum = sum(coral_loss)
+        loss = loss_cls + coral_loss_sum * gamma
         loss.backward()
         optimizer.step()
         if i % settings.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\ttotal_Loss: {:.8f}\tcls_Loss: {:.8f}\tcoral_Loss: {:.8f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\ttotal_Loss: {:.8f}\tcls_Loss: {:.8f}\tcoral_Loss_sum: {:.8f}\tcoral_loss_by_layer:{}'.format(
                 epoch, i * len(data_source), data_loader.len_source_dataset,
-                100. * i / data_loader.len_source_loader, loss.data[0], loss_cls.data[0], loss_coral.data[0]))
+                100. * i / data_loader.len_source_loader, loss.data[0], loss_cls.data[0], coral_loss_sum, coral_loss))
 
         result.append({
             'epoch': epoch,
@@ -68,7 +70,8 @@ def train(epoch, model):
             'total_steps': num_iter,
             'loss': loss.data[0],
             'cls loss': loss_cls.data[0],
-            'coral loss': loss_coral.data[0]
+            'coral loss sum': coral_loss_sum,
+            'coral loss by layer': coral_loss
         })
 
     return result

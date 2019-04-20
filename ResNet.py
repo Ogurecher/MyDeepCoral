@@ -137,24 +137,67 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, source, target=None):
         if (settings.image_size[0] < 224 or settings.image_size[1] < 224):
-            x = self.resize(x)                            ###
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+            source = self.resize(source)
+            if target is not None:
+                target = self.resize(target)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
+        coral_loss = []
+
+        source = self.conv1(source)
+        if target is not None:
+            target = self.conv1(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.bn1(source)
+        if target is not None:
+            target = self.bn1(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.relu(source)
+        if target is not None:
+            target = self.relu(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.maxpool(source)
+        if target is not None:
+            target = self.maxpool(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.layer1(source)
+        if target is not None:
+            target = self.layer1(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.layer2(source)
+        if target is not None:
+            target = self.layer2(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.layer3(source)
+        if target is not None:
+            target = self.layer3(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.layer4(source)
+        if target is not None:
+            target = self.layer4(target)
+            coral_loss.append(CORAL(source, target))
+
+        source = self.avgpool(source)
+        if target is not None:
+            target = self.avgpool(target)
+
+        source = source.view(source.size(0), -1)
+        if target is not None:
+            target = target.view(target.size(0), -1)
+            coral_loss.append(CORAL(source, target))
+
         if resNet_main == True:
-            x = self.classifier(x)
+            source = self.classifier(source)
 
-        return x
+        return source, target, coral_loss
 
 class DeepCoral(nn.Module):
     def __init__(self, num_classes=2):
@@ -163,15 +206,10 @@ class DeepCoral(nn.Module):
         self.cls_fc = nn.Linear(2048, num_classes)
 
     def forward(self, source, target):
-        loss = 0
-        source = self.sharedNet(source)
-
-        if self.training == True:
-            target = self.sharedNet(target)
-            loss += CORAL(source, target)
+        source, target, coral_loss = self.sharedNet(source, target)
         source = self.sharedNet.classifier(source)
 
-        return source, loss
+        return source, coral_loss
 
 
 def resnet50(load):
