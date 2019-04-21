@@ -84,7 +84,7 @@ def test(model, dataset_loader, epoch, mode = "training"):
     for data, target in dataset_loader:
         data, target = Variable(data, volatile=True), Variable(target)
         s_output, t_output = model(data, data)
-        test_loss += F.nll_loss(F.log_softmax(s_output, dim = 1), target, size_average=False).data[0] # sum up batch loss
+        test_loss += F.nll_loss(F.log_softmax(s_output, dim = 1), target, size_average=False).data # sum up batch loss
         pred = s_output.data.max(1)[1] # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
