@@ -62,16 +62,16 @@ def train(epoch, model):
         if i % settings.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\ttotal_Loss: {:.8f}\tcls_Loss: {:.8f}\tcoral_Loss_sum: {:.8f}\tcoral_loss_by_layer:{}'.format(
                 epoch, i * len(data_source), data_loader.len_source_dataset,
-                100. * i / data_loader.len_source_loader, loss.data[0], loss_cls.data[0], coral_loss_sum, coral_loss))
+                100. * i / data_loader.len_source_loader, loss.data, loss_cls.data, coral_loss_sum, [float(tensor.data) for tensor in coral_loss]))
 
         result.append({
             'epoch': epoch,
             'step': i + 1,
             'total_steps': num_iter,
-            'loss': loss.data[0],
-            'cls loss': loss_cls.data[0],
+            'loss': loss.data,
+            'cls loss': loss_cls.data,
             'coral loss sum': coral_loss_sum,
-            'coral loss by layer': coral_loss
+            'coral loss by layer': [float(tensor.data) for tensor in coral_loss]
         })
 
     return result

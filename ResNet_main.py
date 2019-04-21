@@ -108,6 +108,6 @@ if __name__ == '__main__':
     subplot.plot(x_test, y_test, 'r')
     plt.show()
 
-    utils.save(training_statistic, 'training_statistic.pkl')
-    utils.save(testing_statistic, 'testing_statistic.pkl')
-    utils.save_net(model, 'checkpoint.tar')
+    utils.save(training_statistic, 'training_statistic_rn.pkl')
+    utils.save(testing_statistic, 'testing_statistic_rn.pkl')
+    utils.save_net(model, 'checkpoint_rn.tar')

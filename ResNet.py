@@ -28,7 +28,7 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=False) #True
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
         self.downsample = downsample
@@ -65,7 +65,7 @@ class Bottleneck(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=False)  #True
         self.downsample = downsample
         self.stride = stride
 
@@ -101,7 +101,7 @@ class ResNet(nn.Module):
         self.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=False) #True
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
@@ -148,12 +148,10 @@ class ResNet(nn.Module):
         source = self.conv1(source)
         if target is not None:
             target = self.conv1(target)
-            coral_loss.append(CORAL(source, target))
 
         source = self.bn1(source)
         if target is not None:
             target = self.bn1(target)
-            coral_loss.append(CORAL(source, target))
 
         source = self.relu(source)
         if target is not None:
@@ -163,7 +161,6 @@ class ResNet(nn.Module):
         source = self.maxpool(source)
         if target is not None:
             target = self.maxpool(target)
-            coral_loss.append(CORAL(source, target))
 
         source = self.layer1(source)
         if target is not None:
